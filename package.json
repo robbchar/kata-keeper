@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:firebase": "vite build --outDir ../firebase-sites/sites/kata-keeper --emptyOutDir",
     "lint": "eslint .",
     "preview": "vite preview"
   },
