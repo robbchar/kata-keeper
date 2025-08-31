@@ -1,11 +1,28 @@
-import './App.css'
-import KataKeeperApp from './components/KataKeeperApp'
+import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Login from '@/pages/Login';
+import SignUp from '@/pages/SignUp';
+import KataKeeperApp from './pages/KataKeeperApp';
+import { RedirectIfAuthed, RequireAuth } from './auth/guards';
 
-function App() {
-
+export function App() {
   return (
-  <KataKeeperApp />
-  )
-}
+    <BrowserRouter>
+      <Routes>
+        {/* public auth pages when logged OUT */}
+        <Route element={<RedirectIfAuthed />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+        </Route>
 
-export default App
+        {/* everything else requires auth */}
+        <Route element={<RequireAuth />}>
+          <Route path="/*" element={<KataKeeperApp />} />
+        </Route>
+
+        {/* catch-all: redirect to / */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
