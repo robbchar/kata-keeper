@@ -21,6 +21,8 @@ jobs:
           node-version: 20
           cache: yarn
       - run: corepack enable
+      - run: corepack prepare yarn@4.9.4 --activate
+      - run: yarn --version # should print 4.9.4
       - run: yarn install --immutable
       - run: yarn build
       - uses: FirebaseExtended/action-hosting-deploy@v0
