@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { nowISO, uuid, KataRepo, LANGUAGES, STATUSES, tryEnablePersistentStorage, formatRelative, DIFFICULTIES } from "../db";
 import type { Kata, Language, Status, Id, Difficulty } from "../types";
-import { SEED } from "../data/seed";
 import { Label } from "./Label";
 import { Input } from "./Input";
 import { Select } from "./Select";
@@ -97,19 +96,12 @@ export default function KataKeeperApp() {
       await KataRepo.bulkAdd(normalized);
       await reload();
       alert(`Imported ${normalized.length} items.`);
-    } catch (err) {
+    } catch {
       alert("Import failed: invalid JSON");
     } finally {
       e.target.value = ""; // reset
     }
   }
-
-  // Derived values
-  const allTags = useMemo(() => {
-    const s = new Set<string>();
-    katas.forEach(k => k.tags?.forEach(t => s.add(t)));
-    return Array.from(s).sort();
-  }, [katas]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
