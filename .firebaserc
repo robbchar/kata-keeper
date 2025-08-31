@@ -1,0 +1,10 @@
+{
+  "projects": { "default": "robbchar-3db11" },
+  "targets": {
+    "robbchar-3db11": {
+      "hosting": {
+        "kata-keeper-app": ["kata-keeper-robbchar"]
+      }
+    }
+  }
+}
