@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- bg -->
+  <rect x="2" y="2" width="60" height="60" rx="10" fill="#0b1020"/>
+  <!-- white sticker border -->
+  <path d="M32 10l5.8 11.7 12.9 1.9-9.3 9.1 2.2 12.8L32 39.4 20.4 45.5l2.2-12.8-9.3-9.1 12.9-1.9L32 10z"
+        fill="#fff"/>
+  <!-- neon fill -->
+  <path d="M32 13.5l4.9 9.9 10.9 1.6-7.9 7.8 1.9 10.8L32 39l-9.8 5.1 1.9-10.8-7.9-7.8L27.1 23l4.9-9.5z"
+        fill="#00e5ff"/>
+  <!-- tiny sparkle -->
+  <circle cx="44" cy="18" r="1.5" fill="#ff4dd8"/>
+</svg>
