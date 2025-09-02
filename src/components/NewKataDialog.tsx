@@ -129,7 +129,7 @@ export function NewKataDialog({
                 onChange={(e) => setLanguage(e.target.value as Language)}
               >
                 {LANGS.map((l) => (
-                  <option key={l} value={l}>
+                  <option key={l} value={l} className="bg-white text-gray-300">
                     {l}
                   </option>
                 ))}
@@ -144,7 +144,7 @@ export function NewKataDialog({
                 onChange={(e) => setDifficulty(e.target.value as Difficulty)}
               >
                 {DIFFS.map((d) => (
-                  <option key={d} value={d}>
+                  <option key={d} value={d} className="bg-white text-gray-300">
                     {d}
                   </option>
                 ))}
@@ -159,7 +159,7 @@ export function NewKataDialog({
                 onChange={(e) => setLength(e.target.value as Length)}
               >
                 {LENGTHS.map((v) => (
-                  <option key={v} value={v}>
+                  <option key={v} value={v} className="bg-white text-gray-300">
                     {v}
                   </option>
                 ))}
@@ -199,7 +199,7 @@ export function NewKataDialog({
 
           {candidate && (
             <div className="relative mt-4 border rounded p-3">
-              <div className="absolute right-2 top-2 text-[10px] uppercase tracking-wide bg-indigo-600 border border-yellow-400 rounded px-2 py-0.5">
+              <div className="absolute right-2 top-2 text-[10px] uppercase tracking-wide bg-indigo-600 border-indigo-300 rounded px-2 py-0.5">
                 Preview Only
               </div>
 
