@@ -14,3 +14,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </AuthProvider>
   </React.StrictMode>,
 );
+
+console.log('[env]', {
+  MODE: import.meta.env.MODE,
+  DEV: import.meta.env.DEV,
+  PROD: import.meta.env.PROD,
+  VITE_USE_EMULATORS: import.meta.env.VITE_USE_EMULATORS,
+  HOST: location.hostname,
+});

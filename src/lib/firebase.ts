@@ -11,7 +11,8 @@ import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase
 import { setupAuthDebug } from '../debug/authDebug';
 
 const REGION = 'us-west1' as const;
-const USE_EMU = import.meta.env.VITE_USE_EMULATORS === 'true';
+const USE_EMU =
+  import.meta.env.DEV && String(import.meta.env.VITE_USE_EMULATORS).toLowerCase() === 'true';
 console.log('[firebase] emulators:', USE_EMU ? 'ON' : 'OFF');
 
 const firebaseConfig = {
