@@ -38,6 +38,7 @@ export function firebase() {
   _functions = getFunctions(app, REGION);
 
   if (USE_EMU) {
+    console.log('[firebase] connecting to emulators');
     connectAuthEmulator(_auth, 'http://127.0.0.1:9099', { disableWarnings: true });
     connectFirestoreEmulator(_db, '127.0.0.1', 8080);
     connectFunctionsEmulator(_functions, '127.0.0.1', 5001);
