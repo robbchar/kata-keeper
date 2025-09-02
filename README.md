@@ -1,5 +1,7 @@
 # kata-keeper
 
+- logging: https://console.cloud.google.com/logs/query;cursorTimestamp=2025-09-02T20:56:53.415648Z;duration=PT1H?authuser=0&project=robbchar-3db11
+
 # problems / solutions
 
 - I had a hard time getting functions to work, here are some things I did:
