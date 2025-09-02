@@ -10,7 +10,12 @@
   "functions": {
     "source": "firebase-setup/functions",
     "runtime": "nodejs20",
-    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run build"]
+    "endpoints": {
+      "previewKata": {
+        "region": "us-west1",
+        "invoker": "public"
+      }
+    }
   },
   "firestore": { "rules": "firestore.rules", "indexes": "firestore.indexes.json" }
 }

@@ -4,6 +4,7 @@ import type { Kata, Language, Difficulty } from '@/types';
 import { LANGS, DIFFS, LENGTHS, type Length } from '@/ui/constants';
 import { mapPreviewToKata, type AiKataCandidate } from '@/lib/mapPreviewToKata';
 import { firebase } from '@/lib/firebase';
+import type { FirebaseError } from 'firebase/app';
 
 const { functions } = firebase();
 
@@ -58,7 +59,7 @@ export function NewKataDialog({
       setMeta(res.data?.meta ?? null);
       setUsage(res.data?.meta?.usage ?? null);
     } catch (e: unknown) {
-      const error = e as Error;
+      const error = e as FirebaseError;
       setError(error?.message ?? 'Failed to generate preview.');
     } finally {
       setBusy(false);
@@ -82,7 +83,7 @@ export function NewKataDialog({
       await onImport(mapped);
       onClose();
     } catch (e: unknown) {
-      const error = e as Error;
+      const error = e as FirebaseError;
       setError(error?.message ?? 'Failed to import kata.');
     } finally {
       setBusy(false);
@@ -194,8 +195,7 @@ export function NewKataDialog({
 
           {candidate && (
             <div className="relative mt-4 border rounded p-3">
-              {/* PREVIEW ONLY tag */}
-              <div className="absolute right-2 top-2 text-[10px] uppercase tracking-wide bg-yellow-200 border border-yellow-400 rounded px-2 py-0.5">
+              <div className="absolute right-2 top-2 text-[10px] uppercase tracking-wide bg-indigo-600 border border-yellow-400 rounded px-2 py-0.5">
                 Preview Only
               </div>
 
