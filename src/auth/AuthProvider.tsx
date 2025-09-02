@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth } from '@/firebase';
-
+import { firebase } from '@/lib/firebase';
+const { auth } = firebase();
 type AuthContextValue = {
   user: User | null;
   loading: boolean;

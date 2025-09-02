@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { connectFunctionsEmulator, getFunctions, httpsCallable } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import type { Kata, Language, Difficulty } from '@/types';
 import { LANGS, DIFFS, LENGTHS, type Length } from '@/ui/constants';
 import { mapPreviewToKata, type AiKataCandidate } from '@/lib/mapPreviewToKata';
+import { firebase } from '@/lib/firebase';
+
+const { functions } = firebase();
 
 type PreviewMeta = {
   language: Language;
@@ -44,10 +47,6 @@ export function NewKataDialog({
     setBusy(true);
     setError(null);
     try {
-      const functions = getFunctions(undefined, 'us-west1');
-      if (import.meta.env.DEV) {
-        connectFunctionsEmulator(functions, 'localhost', 5001);
-      }
       const fn = httpsCallable(functions, 'previewKata');
       const res = (await fn({
         influence,

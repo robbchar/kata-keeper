@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom/client';
 import { AuthProvider } from '@/auth/AuthProvider';
 import { App } from '@/App';
 import './index.css';
+import { firebase } from '@/lib/firebase';
+
+firebase();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

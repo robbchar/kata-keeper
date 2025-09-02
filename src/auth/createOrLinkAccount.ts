@@ -5,8 +5,9 @@ import {
   signInWithEmailAndPassword,
   type AuthError,
 } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { firebase } from '@/lib/firebase';
 
+const { auth } = firebase();
 /**
  * Creates a new email/password account or upgrades an anonymous user.
  * If the email already exists, falls back to sign-in.
