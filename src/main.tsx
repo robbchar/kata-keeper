@@ -22,11 +22,3 @@ console.log('[env]', {
   VITE_USE_EMULATORS: import.meta.env.VITE_USE_EMULATORS,
   HOST: location.hostname,
 });
-
-console.log(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ((window as any).__FBCFG = {
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    origin: location.origin,
-  }),
-);
