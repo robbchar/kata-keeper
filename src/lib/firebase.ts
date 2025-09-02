@@ -12,6 +12,7 @@ import { setupAuthDebug } from '../debug/authDebug';
 
 const REGION = 'us-west1' as const;
 const USE_EMU = import.meta.env.VITE_USE_EMULATORS === 'true';
+console.log('[firebase] emulators:', USE_EMU ? 'ON' : 'OFF');
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY!,
