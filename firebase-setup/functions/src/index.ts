@@ -81,7 +81,7 @@ function monthKey(d = new Date()) {
   return `${y}-${m}`; // e.g., "2025-09"
 }
 
-export const previewKata = onCall({ secrets: ['OPENAI_API_KEY'], cors: true }, async (req) => {
+export const previewKata = onCall({ secrets: ['OPENAI_API_KEY'] }, async (req) => {
   try {
     if (!req.auth?.uid) {
       throw new HttpsError('unauthenticated', 'Sign in to generate kata previews.');
