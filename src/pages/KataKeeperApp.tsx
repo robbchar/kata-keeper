@@ -189,6 +189,11 @@ export default function KataKeeperApp() {
               onChange={onImportFile}
             />
             <Button onClick={openNew}>New Kata</Button>
+            {import.meta.env.VITE_USE_EMULATORS === 'true' && (
+              <span className="ml-2 rounded bg-amber-200 text-amber-900 px-2 py-0.5 text-xs border border-amber-400">
+                Emulators
+              </span>
+            )}
             <button onClick={() => setGetFromAiOpen(true)} className="px-3 py-2 border rounded">
               New Kata From AI
             </button>

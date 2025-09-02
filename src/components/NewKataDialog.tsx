@@ -59,8 +59,12 @@ export function NewKataDialog({
       setMeta(res.data?.meta ?? null);
       setUsage(res.data?.meta?.usage ?? null);
     } catch (e: unknown) {
-      const error = e as FirebaseError;
-      setError(error?.message ?? 'Failed to generate preview.');
+      const error = e as { message?: string; code?: string; details?: unknown };
+      let msg = error?.message ?? 'Failed to generate preview.';
+      // Optional: nicer messages
+      if (/resource-exhausted/i.test(msg)) msg = 'Quota exceeded — check OpenAI billing/credits.';
+      if (/unauthenticated/i.test(msg)) msg = 'Please sign in to generate a preview.';
+      setError(msg);
     } finally {
       setBusy(false);
     }

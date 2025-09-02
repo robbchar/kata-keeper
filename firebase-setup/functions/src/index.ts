@@ -1,5 +1,5 @@
 import { HttpsError, onCall } from 'firebase-functions/v2/https';
-import { setGlobalOptions } from 'firebase-functions/v2';
+import { setGlobalOptions, logger } from 'firebase-functions/v2';
 import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
 import OpenAI from 'openai';
@@ -86,6 +86,17 @@ export const previewKata = onCall({ secrets: ['OPENAI_API_KEY'] }, async (req) =
     if (!req.auth?.uid) {
       throw new HttpsError('unauthenticated', 'Sign in to generate kata previews.');
     }
+    logger.info('previewKata:start', {
+      uid: req.auth?.uid,
+      meta: req.data
+        ? {
+            hasInfluence: !!req.data.influence,
+            language: req.data.language,
+            difficulty: req.data.difficulty,
+            length: req.data.length,
+          }
+        : null,
+    });
 
     const db = getFirestore();
     const ym = monthKey();
@@ -236,6 +247,7 @@ export const previewKata = onCall({ secrets: ['OPENAI_API_KEY'] }, async (req) =
 
     const spentAfter = spentSoFar + thisCallUSD;
 
+    logger.info('previewKata:ok', { uid: req.auth?.uid, estMinutes });
     return {
       candidate,
       meta: {
@@ -254,6 +266,10 @@ export const previewKata = onCall({ secrets: ['OPENAI_API_KEY'] }, async (req) =
     };
   } catch (err: unknown) {
     console.error('previewKata error:', err);
+    logger.error('previewKata:error', {
+      uid: req.auth?.uid,
+      message: err instanceof Error ? err.message : String(err),
+    });
 
     // Preserve previously thrown Firebase errors
     if (err instanceof HttpsError) throw err;
