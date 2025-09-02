@@ -17,6 +17,7 @@ import { Button } from '@/components/Button';
 import { IconButton } from '@/components/IconButton';
 import { KataForm } from '@/components/KataForm';
 import { Pill } from '@/components/Pill';
+import { NewKataDialog } from '@/components/NewKataDialog';
 
 export default function KataKeeperApp() {
   const [katas, setKatas] = useState<Kata[]>([]);
@@ -29,6 +30,7 @@ export default function KataKeeperApp() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Kata | null>(null);
   const [details, setDetails] = useState<Kata | null>(null);
+  const [getFromAiOpen, setGetFromAiOpen] = useState(false);
 
   // Load data
   useEffect(() => {
@@ -36,7 +38,7 @@ export default function KataKeeperApp() {
       await tryEnablePersistentStorage().catch(() => {});
       const list = await KataRepo.list();
       if (list.length === 0) {
-        // seed on first run
+        // seed on first run if desired
         // await KataRepo.bulkAdd(SEED);
         // setKatas(await KataRepo.list());
       } else {
@@ -86,7 +88,6 @@ export default function KataKeeperApp() {
     await reload();
   }
 
-  // Import/Export
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   function exportJSON() {
     const data = JSON.stringify(katas, null, 2);
@@ -145,6 +146,29 @@ export default function KataKeeperApp() {
     });
   }, [katas, query, langFilter, statusFilter, sortKey]);
 
+  // NEW: local-only AI import (replaces Firestore)
+  const onImportAIKata = async (k: Omit<Kata, 'id'>) => {
+    const now = nowISO();
+    const item: Kata = {
+      id: uuid(),
+      title: k.title,
+      description: k.description,
+      requirements: k.requirements,
+      languages: k.languages && k.languages.length ? k.languages : ['typescript'],
+      tags: (k.tags ?? []).map((t) => t.toLowerCase()),
+      link: k.link,
+      notes: k.notes,
+      status: k.status ?? 'backlog',
+      difficulty: k.difficulty,
+      createdAt: now,
+      updatedAt: now,
+      lastWorkedAt: undefined,
+    };
+    await KataRepo.upsert(item);
+    await reload();
+    setGetFromAiOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
       <header className="sticky top-0 z-10 border-b border-slate-200/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
@@ -165,12 +189,19 @@ export default function KataKeeperApp() {
               onChange={onImportFile}
             />
             <Button onClick={openNew}>New Kata</Button>
+            {import.meta.env.VITE_USE_EMULATORS === 'true' && (
+              <span className="ml-2 rounded bg-amber-200 text-amber-900 px-2 py-0.5 text-xs border border-amber-400">
+                Emulators
+              </span>
+            )}
+            <button onClick={() => setGetFromAiOpen(true)} className="px-3 py-2 border rounded">
+              New Kata From AI
+            </button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6">
-        {/* Toolbar */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <div className="md:col-span-2">
             <Label htmlFor="search">Search</Label>
@@ -457,6 +488,10 @@ export default function KataKeeperApp() {
             </div>
           </div>
         </div>
+      )}
+
+      {getFromAiOpen && (
+        <NewKataDialog onClose={() => setGetFromAiOpen(false)} onImport={onImportAIKata} />
       )}
     </div>
   );

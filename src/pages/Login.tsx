@@ -1,7 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase';
+import { firebase } from '@/lib/firebase';
 import { useState } from 'react';
+
+const { auth } = firebase();
 
 export default function Login() {
   const navigate = useNavigate();

@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Example: public read, authed write to /katas
+    match /katas/{kataId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // If you later move to per-user paths:
+    // match /users/{uid}/katas/{kataId} {
+    //   allow read, write: if request.auth != null && request.auth.uid == uid;
+    // }
+  }
+}

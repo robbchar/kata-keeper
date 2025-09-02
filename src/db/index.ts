@@ -1,58 +1,57 @@
-import Dexie, { type Table } from "dexie";
-import type { Kata, Id, Language, Status, Difficulty } from "../types";
+import Dexie, { type Table } from 'dexie';
+import type { Kata, Id, Language, Status, Difficulty } from '../types';
 
 class KataDB extends Dexie {
   katas!: Table<Kata, Id>;
   constructor() {
-    super("kata-keeper");
+    super('kata-keeper');
     this.version(1).stores({
       // primary key id; indexes for common queries
-      katas: "id, title, status, difficulty, *languages, *tags, createdAt, updatedAt, lastWorkedAt",
+      katas: 'id, title, status, difficulty, *languages, *tags, createdAt, updatedAt, lastWorkedAt',
     });
   }
 }
-const db = new KataDB();
+export const db = new KataDB();
 
-/***** Small repo helpers *****/
 export const KataRepo = {
-  list: () => db.katas.orderBy("updatedAt").reverse().toArray(),
+  list: () => db.katas.orderBy('updatedAt').reverse().toArray(),
   get: (id: Id) => db.katas.get(id),
   upsert: (k: Kata) => db.katas.put(k),
   update: (id: Id, patch: Partial<Kata>) => db.katas.update(id, patch),
   remove: (id: Id) => db.katas.delete(id),
   bulkAdd: (items: Kata[]) => db.katas.bulkPut(items),
 };
-
-/***** Utilities *****/
 export const LANGUAGES: Language[] = [
-  "javascript",
-  "typescript",
-  "react",
-  "vue",
-  "angular",
-  "node",
-  "css",
-  "html",
-  "python",
-  "go",
-  "other",
+  'javascript',
+  'typescript',
+  'react',
+  'vue',
+  'angular',
+  'node',
+  'css',
+  'html',
+  'python',
+  'go',
+  'other',
 ];
-export const STATUSES: Status[] = ["backlog", "in-progress", "done", "abandoned"];
-export const DIFFICULTIES: Difficulty[] = ["warmup", "easy", "medium", "hard"];
+export const STATUSES: Status[] = ['backlog', 'in-progress', 'done', 'abandoned'];
+export const DIFFICULTIES: Difficulty[] = ['warmup', 'easy', 'medium', 'hard'];
 
 export function uuid(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
-  return "id-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
+  return 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-export function nowISO(): string { return new Date().toISOString(); }
+export function nowISO(): string {
+  return new Date().toISOString();
+}
 
 export function classNames(...parts: Array<string | false | undefined>) {
-  return parts.filter(Boolean).join(" ");
+  return parts.filter(Boolean).join(' ');
 }
 
 export function formatRelative(iso?: string) {
-  if (!iso) return "—";
+  if (!iso) return '—';
   const dt = new Date(iso);
   const diff = Date.now() - dt.getTime();
   const sec = Math.round(diff / 1000);

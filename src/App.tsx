@@ -4,11 +4,13 @@ import Login from '@/pages/Login';
 import SignUp from '@/pages/SignUp';
 import KataKeeperApp from './pages/KataKeeperApp';
 import { RedirectIfAuthed, RequireAuth } from './auth/guards';
+import Logout from './components/Logout';
 
 export function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/logout" element={<Logout />} />
         {/* public auth pages when logged OUT */}
         <Route element={<RedirectIfAuthed />}>
           <Route path="/login" element={<Login />} />
