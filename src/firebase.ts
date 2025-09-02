@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { setupAuthDebug } from './debug/authDebug';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -8,6 +9,7 @@ const firebaseConfig = {
 };
 
 export const app = initializeApp(firebaseConfig);
+setupAuthDebug(app, { useEmulator: false });
 export const auth = getAuth(app);
 
 // Persist sessions across reloads
