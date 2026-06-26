@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { KataRepo } from './firestore'
 import type { Kata } from '@/types'
 import type { QuerySnapshot, DocumentData } from 'firebase/firestore'
-import type { firebase } from '@/lib/firebase'
 
 // Mock firebase module
 vi.mock('@/lib/firebase', () => ({
