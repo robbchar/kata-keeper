@@ -5,6 +5,7 @@ export type AiKataCandidate = {
   summary: string // one-line description
   steps: string[] // requirement bullets (3-6 items)
   starterCode: string
+  language?: Language
 }
 
 export type GenerateKataParams = {

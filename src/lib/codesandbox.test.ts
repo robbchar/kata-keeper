@@ -1,29 +1,35 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { parseSandboxId, sandboxEmbedUrl, sandboxOpenUrl, createSandbox, fetchSandboxMeta } from './codesandbox'
+import {
+  parseSandboxIdFromUrl,
+  sandboxEmbedUrl,
+  sandboxOpenUrl,
+  createSandbox,
+  fetchSandboxMetadata,
+} from './codesandbox'
 
 // ---------------------------------------------------------------------------
-// parseSandboxId
+// parseSandboxIdFromUrl
 // ---------------------------------------------------------------------------
 
-describe('parseSandboxId', () => {
+describe('parseSandboxIdFromUrl', () => {
   it('parses /s/ URLs', () => {
-    expect(parseSandboxId('https://codesandbox.io/s/abc123')).toBe('abc123')
+    expect(parseSandboxIdFromUrl('https://codesandbox.io/s/abc123')).toBe('abc123')
   })
 
   it('parses /p/sandbox/ URLs', () => {
-    expect(parseSandboxId('https://codesandbox.io/p/sandbox/my-kata-xyz')).toBe('my-kata-xyz')
+    expect(parseSandboxIdFromUrl('https://codesandbox.io/p/sandbox/my-kata-xyz')).toBe('my-kata-xyz')
   })
 
   it('parses /embed/ URLs', () => {
-    expect(parseSandboxId('https://codesandbox.io/embed/abc123?foo=bar')).toBe('abc123')
+    expect(parseSandboxIdFromUrl('https://codesandbox.io/embed/abc123?foo=bar')).toBe('abc123')
   })
 
   it('returns null for non-CodeSandbox URLs', () => {
-    expect(parseSandboxId('https://github.com/user/repo')).toBeNull()
+    expect(parseSandboxIdFromUrl('https://github.com/user/repo')).toBeNull()
   })
 
   it('returns null for empty input', () => {
-    expect(parseSandboxId('')).toBeNull()
+    expect(parseSandboxIdFromUrl('')).toBeNull()
   })
 })
 
@@ -69,16 +75,20 @@ describe('createSandbox', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    await createSandbox('test-token', {
-      title: 'My Kata',
-      starterCode: 'function solve() {}',
-      spec: '- step one\n- step two',
-      language: 'typescript',
+    await createSandbox({
+      candidate: {
+        title: 'My Kata',
+        summary: 'A kata',
+        steps: ['step one', 'step two'],
+        starterCode: 'function solve() {}',
+        language: 'typescript',
+      },
+      csToken: 'test-token',
     })
 
     expect(fetchMock).toHaveBeenCalledOnce()
     const [url] = fetchMock.mock.calls[0] as [string, RequestInit]
-    expect(url).toBe('https://codesandbox.io/api/v1/sandboxes/define?json=1')
+    expect(url).toBe('https://api.codesandbox.io/api/v1/sandboxes')
   })
 
   it('sends the Authorization header with the token', async () => {
@@ -88,11 +98,15 @@ describe('createSandbox', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    await createSandbox('my-token', {
-      title: 'My Kata',
-      starterCode: 'function solve() {}',
-      spec: '- step one',
-      language: 'typescript',
+    await createSandbox({
+      candidate: {
+        title: 'My Kata',
+        summary: 'A kata',
+        steps: ['step one'],
+        starterCode: 'function solve() {}',
+        language: 'typescript',
+      },
+      csToken: 'my-token',
     })
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
@@ -107,11 +121,15 @@ describe('createSandbox', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    await createSandbox('token', {
-      title: 'React Kata',
-      starterCode: 'export default function App() {}',
-      spec: '- step one',
-      language: 'react',
+    await createSandbox({
+      candidate: {
+        title: 'React Kata',
+        summary: 'A react kata',
+        steps: ['step one'],
+        starterCode: 'export default function App() {}',
+        language: 'react',
+      },
+      csToken: 'token',
     })
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
@@ -119,18 +137,22 @@ describe('createSandbox', () => {
     expect(body.files).toHaveProperty('index.tsx')
   })
 
-  it('includes a README.md with the kata title and spec', async () => {
+  it('includes a README.md with the kata title and steps as a bullet list', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ sandbox_id: 'new-sandbox-id' }),
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    await createSandbox('token', {
-      title: 'My Kata',
-      starterCode: 'function solve() {}',
-      spec: '- step one\n- step two',
-      language: 'typescript',
+    await createSandbox({
+      candidate: {
+        title: 'My Kata',
+        summary: 'A kata',
+        steps: ['step one', 'step two'],
+        starterCode: 'function solve() {}',
+        language: 'typescript',
+      },
+      csToken: 'token',
     })
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
@@ -139,20 +161,24 @@ describe('createSandbox', () => {
     expect(body.files['README.md'].content).toContain('- step one')
   })
 
-  it('returns the sandbox ID from the response', async () => {
+  it('returns just the sandbox ID string from the response', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ sandbox_id: 'returned-id' }),
     }))
 
-    const result = await createSandbox('token', {
-      title: 'Kata',
-      starterCode: '',
-      spec: '',
-      language: 'typescript',
+    const result = await createSandbox({
+      candidate: {
+        title: 'Kata',
+        summary: '',
+        steps: [],
+        starterCode: '',
+        language: 'typescript',
+      },
+      csToken: 'token',
     })
 
-    expect(result.id).toBe('returned-id')
+    expect(result).toBe('returned-id')
   })
 
   it('throws on a non-OK response', async () => {
@@ -162,7 +188,10 @@ describe('createSandbox', () => {
     }))
 
     await expect(
-      createSandbox('bad-token', { title: 'K', starterCode: '', spec: '', language: 'typescript' }),
+      createSandbox({
+        candidate: { title: 'K', summary: '', steps: [], starterCode: '', language: 'typescript' },
+        csToken: 'bad-token',
+      }),
     ).rejects.toThrow('403')
   })
 
@@ -173,16 +202,19 @@ describe('createSandbox', () => {
     }))
 
     await expect(
-      createSandbox('token', { title: 'K', starterCode: '', spec: '', language: 'typescript' }),
+      createSandbox({
+        candidate: { title: 'K', summary: '', steps: [], starterCode: '', language: 'typescript' },
+        csToken: 'token',
+      }),
     ).rejects.toThrow('no sandbox ID')
   })
 })
 
 // ---------------------------------------------------------------------------
-// fetchSandboxMeta
+// fetchSandboxMetadata
 // ---------------------------------------------------------------------------
 
-describe('fetchSandboxMeta', () => {
+describe('fetchSandboxMetadata', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
   })
@@ -194,10 +226,10 @@ describe('fetchSandboxMeta', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    await fetchSandboxMeta('token', 'sandbox-abc')
+    await fetchSandboxMetadata({ sandboxId: 'sandbox-abc', csToken: 'token' })
 
     const [url] = fetchMock.mock.calls[0] as [string, RequestInit]
-    expect(url).toBe('https://codesandbox.io/api/v1/sandboxes/sandbox-abc')
+    expect(url).toBe('https://api.codesandbox.io/api/v1/sandboxes/sandbox-abc')
   })
 
   it('sends the Authorization header with the token', async () => {
@@ -207,44 +239,46 @@ describe('fetchSandboxMeta', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    await fetchSandboxMeta('my-token', 'sandbox-abc')
+    await fetchSandboxMetadata({ sandboxId: 'sandbox-abc', csToken: 'my-token' })
 
     const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     const headers = init.headers as Record<string, string>
     expect(headers['Authorization']).toBe('Bearer my-token')
   })
 
-  it('returns updatedAt from the top-level updated_at field', async () => {
+  it('returns sandboxId and updatedAt from the top-level updated_at field', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ updated_at: '2024-06-01T12:00:00Z' }),
     }))
 
-    const result = await fetchSandboxMeta('token', 'sandbox-abc')
-    expect(result).toEqual({ updatedAt: '2024-06-01T12:00:00Z' })
+    const result = await fetchSandboxMetadata({ sandboxId: 'sandbox-abc', csToken: 'token' })
+    expect(result).toEqual({ sandboxId: 'sandbox-abc', updatedAt: '2024-06-01T12:00:00Z' })
   })
 
-  it('returns updatedAt from the nested sandbox.updated_at field', async () => {
+  it('returns sandboxId and updatedAt from the nested sandbox.updated_at field', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ sandbox: { updated_at: '2024-06-02T00:00:00Z' } }),
     }))
 
-    const result = await fetchSandboxMeta('token', 'sandbox-abc')
-    expect(result).toEqual({ updatedAt: '2024-06-02T00:00:00Z' })
+    const result = await fetchSandboxMetadata({ sandboxId: 'sandbox-abc', csToken: 'token' })
+    expect(result).toEqual({ sandboxId: 'sandbox-abc', updatedAt: '2024-06-02T00:00:00Z' })
   })
 
-  it('returns null on a non-OK response', async () => {
+  it('throws on a non-OK response', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 404 }))
 
-    const result = await fetchSandboxMeta('token', 'missing-id')
-    expect(result).toBeNull()
+    await expect(
+      fetchSandboxMetadata({ sandboxId: 'missing-id', csToken: 'token' }),
+    ).rejects.toThrow('404')
   })
 
-  it('returns null when the network request throws', async () => {
+  it('throws when the network request fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')))
 
-    const result = await fetchSandboxMeta('token', 'sandbox-abc')
-    expect(result).toBeNull()
+    await expect(
+      fetchSandboxMetadata({ sandboxId: 'sandbox-abc', csToken: 'token' }),
+    ).rejects.toThrow('Network error')
   })
 })
