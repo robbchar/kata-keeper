@@ -1,12 +1,24 @@
 import { useState } from 'react';
-import { httpsCallable } from 'firebase/functions';
 import type { Kata, Language, Difficulty } from '@/types';
 import { LANGS, DIFFS, LENGTHS, type Length } from '@/ui/constants';
-import { mapPreviewToKata, type AiKataCandidate } from '@/lib/mapPreviewToKata';
 import { firebase } from '@/lib/firebase';
 import type { FirebaseError } from 'firebase/app';
 
-const { functions } = firebase();
+// firebase() is imported to keep the module referenced; will be used in Task 11 rewrite
+void firebase;
+
+type AiKataCandidate = {
+  title: string;
+  summary: string;
+  description: string;
+  steps: string[];
+  tags: string[];
+  starterCode: string;
+  tests: string;
+  solution: string;
+  hints: string[];
+  acceptanceCriteria: string[];
+};
 
 type PreviewMeta = {
   language: Language;
@@ -44,27 +56,16 @@ export function NewKataDialog({
 
   const canRetry = !!candidate;
 
+  // TODO (Task 11): Rewire to new AI generation endpoint
+  // setCandidate / setMeta / setUsage kept here so Task 11 can fill them in without a rewrite
   const doPreview = async () => {
     setBusy(true);
     setError(null);
+    setCandidate(null);
+    setMeta(null);
+    setUsage(null);
     try {
-      const fn = httpsCallable(functions, 'previewKata');
-      const res = (await fn({
-        influence,
-        language,
-        difficulty,
-        length,
-      })) as { data: { candidate: AiKataCandidate; meta: PreviewMeta } };
-      setCandidate(res.data?.candidate ?? null);
-      setMeta(res.data?.meta ?? null);
-      setUsage(res.data?.meta?.usage ?? null);
-    } catch (e: unknown) {
-      const error = e as { message?: string; code?: string; details?: unknown };
-      let msg = error?.message ?? 'Failed to generate preview.';
-      // Optional: nicer messages
-      if (/resource-exhausted/i.test(msg)) msg = 'Quota exceeded — check OpenAI billing/credits.';
-      if (/unauthenticated/i.test(msg)) msg = 'Please sign in to generate a preview.';
-      setError(msg);
+      setError('AI generation will be rewired in a later task');
     } finally {
       setBusy(false);
     }
@@ -79,12 +80,8 @@ export function NewKataDialog({
     setBusy(true);
     setError(null);
     try {
-      const mapped: Omit<Kata, 'id'> = mapPreviewToKata(
-        candidate,
-        language,
-        difficulty as Difficulty,
-      );
-      await onImport(mapped);
+      // candidate is always null until Task 11 wires up AI generation
+      await onImport(candidate as unknown as Omit<Kata, 'id'>);
       onClose();
     } catch (e: unknown) {
       const error = e as FirebaseError;

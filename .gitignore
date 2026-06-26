@@ -26,3 +26,4 @@ dist-ssr
 firebase-setup/functions/lib
 firebase-setup/functions/.secret.local
 .env
+coverage/
