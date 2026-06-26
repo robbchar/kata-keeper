@@ -14,7 +14,7 @@ class KataDB extends Dexie {
 export const db = new KataDB();
 
 export const KataRepo = {
-  list: () => db.katas.orderBy('updatedAt').reverse().toArray(),
+  list: () => db.katas.orderBy('createdAt').reverse().toArray(),
   get: (id: Id) => db.katas.get(id),
   upsert: (k: Kata) => db.katas.put(k),
   update: (id: Id, patch: Partial<Kata>) => db.katas.update(id, patch),
