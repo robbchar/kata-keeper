@@ -10,7 +10,7 @@ import {
 import { firebase } from '@/lib/firebase'
 import type { Kata, Id } from '@/types'
 
-/** Firestore namespace — all user data lives under this top-level document */
+/** Firestore namespace — all user data lives under the top-level collection */
 const NS = 'kata-keeper'
 
 /**
@@ -33,7 +33,7 @@ export const KataRepo = {
    */
   async list(): Promise<Kata[]> {
     const { db, uid } = getContext()
-    const col = collection(db, NS, 'users', uid, 'katas')
+    const col = collection(db, NS, uid, 'katas')
     const snap = await getDocs(col)
     return snap.docs
       .map((d) => d.data() as Kata)
@@ -47,25 +47,25 @@ export const KataRepo = {
   /** Returns a single kata by ID, or `undefined` if it does not exist */
   async get(id: Id): Promise<Kata | undefined> {
     const { db, uid } = getContext()
-    const snap = await getDoc(doc(db, NS, 'users', uid, 'katas', id))
+    const snap = await getDoc(doc(db, NS, uid, 'katas', id))
     return snap.exists() ? (snap.data() as Kata) : undefined
   },
 
   /** Creates or fully overwrites a kata document */
   async upsert(kata: Kata): Promise<void> {
     const { db, uid } = getContext()
-    await setDoc(doc(db, NS, 'users', uid, 'katas', kata.id), kata)
+    await setDoc(doc(db, NS, uid, 'katas', kata.id), kata)
   },
 
   /** Applies a partial update to an existing kata document */
   async update(id: Id, patch: Partial<Kata>): Promise<void> {
     const { db, uid } = getContext()
-    await updateDoc(doc(db, NS, 'users', uid, 'katas', id), patch)
+    await updateDoc(doc(db, NS, uid, 'katas', id), patch)
   },
 
   /** Deletes a kata document by ID */
   async remove(id: Id): Promise<void> {
     const { db, uid } = getContext()
-    await deleteDoc(doc(db, NS, 'users', uid, 'katas', id))
+    await deleteDoc(doc(db, NS, uid, 'katas', id))
   },
 }

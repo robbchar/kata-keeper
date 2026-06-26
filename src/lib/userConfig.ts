@@ -18,7 +18,7 @@ export const DEFAULT_TAGS = [
 ]
 
 function configDoc(uid: string) {
-  return doc(firebase().db, 'kata-keeper', 'users', uid)
+  return doc(firebase().db, 'kata-keeper', uid)
 }
 
 export async function getUserConfig(uid: string): Promise<UserConfig> {
