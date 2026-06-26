@@ -1,3 +1,5 @@
+// TODO(v2): This component references removed v1 types (Status, Difficulty) and constants
+// (STATUSES, DIFFICULTIES). It will be rewritten in a later task to work with v2 schema.
 import { useState } from 'react';
 import { nowISO, uuid, LANGUAGES, DIFFICULTIES, STATUSES } from '../db';
 import type { Kata, Language, Status, Difficulty } from '../types';

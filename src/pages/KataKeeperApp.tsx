@@ -1,3 +1,5 @@
+// TODO(v2): This component references removed v1 types (Status, Difficulty) and constants
+// (STATUSES, DIFFICULTIES, LANGUAGES). It will be rewritten in a later task to work with v2 schema.
 import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   nowISO,

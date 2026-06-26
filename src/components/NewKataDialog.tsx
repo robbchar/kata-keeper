@@ -1,3 +1,5 @@
+// TODO(v2): This component references removed v1 type (Difficulty).
+// It will be rewritten in a later task to work with v2 schema.
 import { useState } from 'react';
 import type { Kata, Language, Difficulty } from '@/types';
 import { LANGS, DIFFS, LENGTHS, type Length } from '@/ui/constants';

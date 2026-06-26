@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Kata, Id, Language, Status, Difficulty } from '../types';
+import type { Kata, Id, Language } from '../types';
 
 class KataDB extends Dexie {
   katas!: Table<Kata, Id>;
@@ -7,7 +7,7 @@ class KataDB extends Dexie {
     super('kata-keeper');
     this.version(1).stores({
       // primary key id; indexes for common queries
-      katas: 'id, title, status, difficulty, *languages, *tags, createdAt, updatedAt, lastWorkedAt',
+      katas: 'id, title, *languages, *tags, createdAt',
     });
   }
 }
@@ -25,17 +25,7 @@ export const LANGUAGES: Language[] = [
   'javascript',
   'typescript',
   'react',
-  'vue',
-  'angular',
-  'node',
-  'css',
-  'html',
-  'python',
-  'go',
-  'other',
 ];
-export const STATUSES: Status[] = ['backlog', 'in-progress', 'done', 'abandoned'];
-export const DIFFICULTIES: Difficulty[] = ['warmup', 'easy', 'medium', 'hard'];
 
 export function uuid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
