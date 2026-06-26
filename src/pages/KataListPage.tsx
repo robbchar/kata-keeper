@@ -1,6 +1,7 @@
 // TODO(v2): This component references removed v1 types (Status, Difficulty) and constants
 // (STATUSES, DIFFICULTIES, LANGUAGES). It will be rewritten in a later task to work with v2 schema.
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import {
   nowISO,
   uuid,
@@ -21,7 +22,7 @@ import { KataForm } from '@/components/KataForm';
 import { Pill } from '@/components/Pill';
 import { NewKataDialog } from '@/components/NewKataDialog';
 
-export default function KataKeeperApp() {
+export default function KataListPage() {
   const [katas, setKatas] = useState<Kata[]>([]);
   const [query, setQuery] = useState('');
   const [langFilter, setLangFilter] = useState<Language | ''>('');
@@ -199,6 +200,7 @@ export default function KataKeeperApp() {
             <button onClick={() => setGetFromAiOpen(true)} className="px-3 py-2 border rounded">
               New Kata From AI
             </button>
+            <Link to="/config" className="px-3 py-2 border rounded text-sm">Settings</Link>
           </div>
         </div>
       </header>
