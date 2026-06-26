@@ -54,7 +54,11 @@ export function formatRelative(iso?: string) {
 
 export async function tryEnablePersistentStorage(): Promise<boolean> {
   // Ask the browser not to evict our data under storage pressure
-  const persisted = await (navigator.storage as any)?.persisted?.()
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const persisted = await navigator.storage?.persisted?.()
   if (persisted) return true
-  return (await (navigator.storage as any)?.persist?.()) ?? false
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  return (await navigator.storage?.persist?.()) ?? false
 }

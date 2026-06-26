@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { KataRepo } from './firestore'
 import type { Kata } from '@/types'
+import type { QuerySnapshot, DocumentData } from 'firebase/firestore'
 
 // Mock firebase module
 vi.mock('@/lib/firebase', () => ({
@@ -43,7 +44,7 @@ describe('KataRepo', () => {
         { data: () => older },
         { data: () => newer },
       ],
-    } as any)
+    } as unknown as QuerySnapshot<DocumentData>)
 
     const result = await KataRepo.list()
     expect(result[0].id).toBe('new')
@@ -52,7 +53,7 @@ describe('KataRepo', () => {
 
   it('throws when not authenticated', async () => {
     const { firebase } = await import('@/lib/firebase')
-    vi.mocked(firebase).mockReturnValueOnce({ auth: { currentUser: null }, db: {} } as any)
+    vi.mocked(firebase).mockReturnValueOnce({ auth: { currentUser: null }, db: {} } as unknown as { auth: { currentUser: null }; db: Record<string, unknown> })
 
     await expect(KataRepo.list()).rejects.toThrow('Not authenticated')
   })
