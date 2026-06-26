@@ -32,19 +32,19 @@ export function parseSandboxIdFromUrl(url: string): string | null {
  * - CodeSandbox URL → sandboxId extraction from the v1 `link` field
  * - Drops all v1-only fields (status, updatedAt, link, etc.)
  */
-export function mapLegacyKata(legacy: Record<string, any>): Kata {
-  const validLangs = (legacy.languages ?? []).filter((l: string) =>
+export function mapLegacyKata(legacy: Record<string, unknown>): Kata {
+  const validLangs = ((legacy.languages as string[] | undefined) ?? []).filter((l: string) =>
     VALID_LANGUAGES.has(l as Language),
   ) as Language[]
 
   return {
-    id: legacy.id ?? uuid(),
-    title: legacy.title ?? 'Untitled',
+    id: (legacy.id as string) ?? uuid(),
+    title: (legacy.title as string) ?? 'Untitled',
     languages: validLangs.length > 0 ? validLangs : ['typescript'],
-    tags: (legacy.tags ?? []).map((t: string) => t.toLowerCase()),
-    sandboxId: legacy.link ? (parseSandboxIdFromUrl(legacy.link) ?? undefined) : undefined,
-    notes: legacy.notes || undefined,
-    createdAt: legacy.createdAt ?? new Date().toISOString(),
+    tags: ((legacy.tags as string[]) ?? []).map((t: string) => t.toLowerCase()),
+    sandboxId: legacy.link ? (parseSandboxIdFromUrl(legacy.link as string) ?? undefined) : undefined,
+    notes: legacy.notes as string | undefined,
+    createdAt: (legacy.createdAt as string) ?? new Date().toISOString(),
   }
 }
 
