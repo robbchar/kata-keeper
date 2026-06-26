@@ -1,7 +1,11 @@
 // TODO(v2): This component references removed v1 type (Difficulty).
 // It will be rewritten in a later task to work with v2 schema.
 import { useState } from 'react';
-import type { Kata, Language, Difficulty } from '@/types';
+import type { Kata, Language } from '@/types';
+
+// Difficulty was removed from the v2 schema; keeping the local alias here until
+// this component is rewritten in Task 11.
+type Difficulty = 'warmup' | 'easy' | 'medium' | 'hard';
 import { LANGS, DIFFS, LENGTHS, type Length } from '@/ui/constants';
 import { firebase } from '@/lib/firebase';
 import type { FirebaseError } from 'firebase/app';

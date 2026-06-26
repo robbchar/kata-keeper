@@ -53,7 +53,8 @@ describe('KataRepo', () => {
 
   it('throws when not authenticated', async () => {
     const { firebase } = await import('@/lib/firebase')
-    vi.mocked(firebase).mockReturnValueOnce({ auth: { currentUser: null }, db: {} } as unknown as { auth: { currentUser: null }; db: Record<string, unknown> })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(firebase).mockReturnValueOnce({ auth: { currentUser: null }, db: {} } as any)
 
     await expect(KataRepo.list()).rejects.toThrow('Not authenticated')
   })

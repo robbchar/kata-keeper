@@ -66,7 +66,7 @@ export async function runMigrationIfNeeded(): Promise<boolean> {
   const existingKatas = await KataRepo.list()
   if (existingKatas.length > 0) return false
 
-  const mapped = legacyKatas.map(mapLegacyKata)
+  const mapped = (legacyKatas as unknown as Record<string, unknown>[]).map(mapLegacyKata)
   await Promise.all(mapped.map((k) => KataRepo.upsert(k)))
   await legacyDb.katas.clear()
   return true
