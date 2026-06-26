@@ -38,7 +38,6 @@ export function TagInput({ tags, onChange }: TagInputProps) {
     // If the user typed a comma, treat it as an add action
     const value = e.target.value
     if (value.endsWith(',')) {
-      setInput(value.slice(0, -1))
       // addTag will be called via synthetic state — use timeout-free approach:
       const tag = value.slice(0, -1).trim().toLowerCase()
       if (tag && !tags.includes(tag)) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { GithubAuthProvider, signInWithPopup } from 'firebase/auth'
 import { useAuth } from '@/auth/AuthProvider'
@@ -56,6 +56,7 @@ export default function ConfigPage() {
   const [testMessage, setTestMessage] = useState('')
   const [githubConnecting, setGithubConnecting] = useState(false)
   const [githubError, setGithubError] = useState('')
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -80,6 +81,16 @@ export default function ConfigPage() {
     },
     [user, config],
   )
+
+  /**
+   * Debounced save for sensitive text fields (API keys, tokens). Waits 400ms
+   * after the last keystroke before persisting — avoids a Firestore write per
+   * character while the user is still typing.
+   */
+  function debouncedSave(patch: Partial<UserConfig>) {
+    if (saveTimer.current) clearTimeout(saveTimer.current)
+    saveTimer.current = setTimeout(() => save(patch), 400)
+  }
 
   // ---------------------------------------------------------------------------
   // AI connection test
@@ -217,7 +228,7 @@ export default function ConfigPage() {
               }}
             >
               <option value="openai">OpenAI (gpt-4o-mini)</option>
-              <option value="anthropic">Anthropic (claude-sonnet-4-5)</option>
+              <option value="anthropic">Anthropic (claude-sonnet-4-6)</option>
             </select>
           </Field>
 
@@ -227,7 +238,7 @@ export default function ConfigPage() {
               className={INPUT_CLASS}
               value={config.aiApiKey}
               onChange={(e) => {
-                save({ aiApiKey: e.target.value })
+                debouncedSave({ aiApiKey: e.target.value })
                 setTestStatus('idle')
                 setTestMessage('')
               }}
@@ -273,7 +284,7 @@ export default function ConfigPage() {
               type="password"
               className={INPUT_CLASS}
               value={config.csToken}
-              onChange={(e) => save({ csToken: e.target.value })}
+              onChange={(e) => debouncedSave({ csToken: e.target.value })}
               placeholder="Your CodeSandbox API token"
               autoComplete="off"
             />
@@ -286,37 +297,21 @@ export default function ConfigPage() {
                 : 'Connect GitHub to allow Kata Keeper to create sandboxes on your behalf.'}
             </p>
 
-            {!config.csGitHubConnected && (
-              <button
-                type="button"
-                onClick={handleConnectGitHub}
-                disabled={githubConnecting}
-                className={classNames(
-                  'inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-sm font-medium transition-colors',
-                  'border-slate-300 dark:border-slate-600',
-                  'hover:bg-slate-100 dark:hover:bg-slate-800',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                )}
-              >
-                {githubConnecting ? 'Connecting…' : 'Connect GitHub'}
-              </button>
-            )}
-
-            {config.csGitHubConnected && (
-              <button
-                type="button"
-                onClick={handleConnectGitHub}
-                disabled={githubConnecting}
-                className={classNames(
-                  'inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-sm font-medium transition-colors',
-                  'border-slate-300 dark:border-slate-600',
-                  'hover:bg-slate-100 dark:hover:bg-slate-800',
-                  'disabled:opacity-50 disabled:cursor-not-allowed',
-                )}
-              >
-                {githubConnecting ? 'Reconnecting…' : 'Reconnect GitHub'}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleConnectGitHub}
+              disabled={githubConnecting}
+              className={classNames(
+                'inline-flex items-center gap-2 px-3 py-1.5 rounded-md border text-sm font-medium transition-colors',
+                'border-slate-300 dark:border-slate-600',
+                'hover:bg-slate-100 dark:hover:bg-slate-800',
+                'disabled:opacity-50 disabled:cursor-not-allowed',
+              )}
+            >
+              {githubConnecting
+                ? (config.csGitHubConnected ? 'Reconnecting…' : 'Connecting…')
+                : (config.csGitHubConnected ? 'Reconnect GitHub' : 'Connect GitHub')}
+            </button>
 
             {githubError && (
               <p className="text-sm text-red-600 dark:text-red-400">✗ {githubError}</p>
