@@ -1,4 +1,5 @@
 import type { UserConfig } from '@/types/config'
+import type { AiProvider } from './types'
 import { OpenAIProvider } from './openai'
 import { AnthropicProvider } from './anthropic'
 
@@ -7,7 +8,7 @@ export { estimateMinutes } from './prompt'
 
 export function createAiProvider(
   config: Pick<UserConfig, 'aiProvider' | 'aiApiKey'>,
-): OpenAIProvider | AnthropicProvider {
+): AiProvider {
   if (config.aiProvider === 'anthropic') {
     return new AnthropicProvider(config.aiApiKey)
   }

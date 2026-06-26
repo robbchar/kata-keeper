@@ -5,6 +5,7 @@ import { buildSystemPrompt, buildUserPrompt } from './prompt'
 const PRICE_PER_INPUT_TOKEN = 0.003 / 1_000
 const PRICE_PER_OUTPUT_TOKEN = 0.015 / 1_000
 
+const JSON_INSTRUCTION = ' Return ONLY valid JSON — no markdown fencing.'
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages'
 
 type AnthropicMessage = {
@@ -23,7 +24,7 @@ export class AnthropicProvider implements AiProvider {
   }
 
   async generateKata(params: GenerateKataParams): Promise<AiKataCandidate> {
-    const systemPrompt = buildSystemPrompt() + ' Return ONLY valid JSON — no markdown fencing.'
+    const systemPrompt = buildSystemPrompt() + JSON_INSTRUCTION
 
     const response = await fetch(ANTHROPIC_API_URL, {
       method: 'POST',
@@ -54,7 +55,7 @@ export class AnthropicProvider implements AiProvider {
 
   estimateCost(candidate: AiKataCandidate, params: GenerateKataParams): CostEstimate {
     // Rough token estimate: characters / 4 (standard approximation)
-    const systemPrompt = buildSystemPrompt() + ' Return ONLY valid JSON — no markdown fencing.'
+    const systemPrompt = buildSystemPrompt() + JSON_INSTRUCTION
     const inputText = systemPrompt + '\n' + buildUserPrompt(params)
     const outputText = JSON.stringify(candidate)
 
