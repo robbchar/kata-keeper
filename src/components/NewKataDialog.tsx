@@ -103,13 +103,13 @@ export function NewKataDialog({ isOpen, onClose, existingKataTitles }: NewKataDi
         createdAt: nowISO(),
       })
 
-      onClose()
-
       if (!config.csToken) {
         // Nudge the user to connect CodeSandbox before navigating away
         setError('Kata saved! Connect CodeSandbox in Config to open it in a sandbox.')
         await new Promise((r) => setTimeout(r, 1500))
       }
+
+      onClose()
 
       navigate(`/kata/${kataId}`)
     } catch (e: unknown) {
