@@ -98,11 +98,16 @@ export default function KataListPage() {
         id: k.id || uuid(),
         createdAt: k.createdAt || nowISO(),
       }));
-      await Promise.all(normalized.map((k) => KataRepo.upsert(k)));
+      const results = await Promise.allSettled(normalized.map((k) => KataRepo.upsert(k)));
+      const failures = results.filter((r) => r.status === 'rejected');
       await reload();
-      alert(`Imported ${normalized.length} items.`);
+      if (failures.length > 0) {
+        alert(`Imported ${results.length - failures.length} of ${results.length} items. ${failures.length} failed to save.`);
+      } else {
+        alert(`Imported ${results.length} items.`);
+      }
     } catch {
-      alert('Import failed: invalid JSON');
+      alert('Import failed: could not parse file as JSON');
     } finally {
       e.target.value = '';
     }

@@ -67,7 +67,11 @@ export async function runMigrationIfNeeded(): Promise<boolean> {
   if (existingKatas.length > 0) return false
 
   const mapped = (legacyKatas as unknown as Record<string, unknown>[]).map(mapLegacyKata)
-  await Promise.all(mapped.map((k) => KataRepo.upsert(k)))
+  const results = await Promise.allSettled(mapped.map((k) => KataRepo.upsert(k)))
+  const failures = results.filter((r) => r.status === 'rejected')
+  if (failures.length > 0) {
+    throw new Error(`Migration incomplete: ${failures.length} of ${results.length} katas failed to write`)
+  }
   await legacyDb.katas.clear()
   return true
 }
