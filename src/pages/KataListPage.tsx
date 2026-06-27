@@ -125,23 +125,6 @@ export default function KataListPage() {
     });
   }, [katas, query, langFilter, tagFilter, sortKey]);
 
-  const onImportAIKata = async (k: Omit<Kata, 'id'>) => {
-    const now = nowISO();
-    const item: Kata = {
-      id: uuid(),
-      title: k.title,
-      languages: k.languages?.length ? k.languages : ['typescript'],
-      tags: (k.tags ?? []).map((t) => t.toLowerCase()),
-      sandboxId: k.sandboxId,
-      sandboxUpdatedAt: k.sandboxUpdatedAt,
-      notes: k.notes,
-      createdAt: now,
-    };
-    await KataRepo.upsert(item);
-    await reload();
-    setGetFromAiOpen(false);
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
       <header className="sticky top-0 z-10 border-b border-slate-200/70 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur">
@@ -345,7 +328,7 @@ export default function KataListPage() {
       )}
 
       {getFromAiOpen && (
-        <NewKataDialog onClose={() => setGetFromAiOpen(false)} onImport={onImportAIKata} />
+        <NewKataDialog onClose={() => setGetFromAiOpen(false)} />
       )}
     </div>
   );
