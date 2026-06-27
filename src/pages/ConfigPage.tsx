@@ -124,6 +124,7 @@ export default function ConfigPage() {
           headers: {
             'x-api-key': config.aiApiKey,
             'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-calls': 'true',
           },
         })
         if (res.ok) {
