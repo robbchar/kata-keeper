@@ -327,9 +327,11 @@ export default function KataListPage() {
         </div>
       )}
 
-      {getFromAiOpen && (
-        <NewKataDialog onClose={() => setGetFromAiOpen(false)} />
-      )}
+      <NewKataDialog
+        isOpen={getFromAiOpen}
+        onClose={() => setGetFromAiOpen(false)}
+        existingKataTitles={katas.map((k) => k.title)}
+      />
     </div>
   );
 }

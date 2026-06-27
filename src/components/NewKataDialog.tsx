@@ -9,7 +9,13 @@ import type { Language } from '@/types'
 import { LANGS, DIFFS, LENGTHS, type Length } from '@/ui/constants'
 import { KataRepo, uuid, nowISO } from '@/db'
 
-export function NewKataDialog({ onClose }: { onClose: () => void }) {
+interface NewKataDialogProps {
+  isOpen: boolean
+  onClose: () => void
+  existingKataTitles: string[]
+}
+
+export function NewKataDialog({ isOpen, onClose, existingKataTitles }: NewKataDialogProps) {
   const { user } = useAuth()
   const navigate = useNavigate()
 
@@ -26,10 +32,20 @@ export function NewKataDialog({ onClose }: { onClose: () => void }) {
   const [candidate, setCandidate] = useState<AiKataCandidate | null>(null)
   const [cost, setCost] = useState<CostEstimate | null>(null)
 
+  if (!isOpen) return null
+
   async function doGenerate() {
-    if (!user) return
-    setBusy(true)
+    if (!user) {
+      setError('You must be signed in to generate a kata.')
+      return
+    }
+
+    // Clear stale state before each new generation run
+    setCandidate(null)
+    setCost(null)
     setError(null)
+
+    setBusy(true)
     try {
       const config = await getUserConfig(user.uid)
       if (!config.aiApiKey) {
@@ -39,18 +55,12 @@ export function NewKataDialog({ onClose }: { onClose: () => void }) {
 
       const provider = createAiProvider(config)
 
-      let existingKataTitles: string[] | undefined
-      if (useExisting) {
-        const katas = await KataRepo.list()
-        existingKataTitles = katas.map((k) => k.title)
-      }
-
       const params: GenerateKataParams = {
         influence: influence || undefined,
         language,
         difficulty,
         length,
-        existingKataTitles,
+        existingKataTitles: useExisting ? existingKataTitles : undefined,
       }
 
       const generated = await provider.generateKata(params)
@@ -94,6 +104,13 @@ export function NewKataDialog({ onClose }: { onClose: () => void }) {
       })
 
       onClose()
+
+      if (!config.csToken) {
+        // Nudge the user to connect CodeSandbox before navigating away
+        setError('Kata saved! Connect CodeSandbox in Config to open it in a sandbox.')
+        await new Promise((r) => setTimeout(r, 1500))
+      }
+
       navigate(`/kata/${kataId}`)
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : 'Failed to save.')
@@ -105,10 +122,21 @@ export function NewKataDialog({ onClose }: { onClose: () => void }) {
   const estMinutes = estimateMinutes(length)
 
   return (
-    <div role="dialog" aria-modal className="fixed inset-0 z-20 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="new-kata-dialog-title"
+      className="fixed inset-0 z-20 flex items-center justify-center p-4"
+    >
+      <div
+        data-testid="dialog-backdrop"
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
       <div className="relative w-full max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 shadow-2xl overflow-y-auto max-h-[90vh]">
-        <h2 className="text-xl font-semibold mb-4">New Kata from AI</h2>
+        <h2 id="new-kata-dialog-title" className="text-xl font-semibold mb-4">
+          New Kata from AI
+        </h2>
 
         <div className="space-y-4">
           <label className="block text-sm">
@@ -121,51 +149,60 @@ export function NewKataDialog({ onClose }: { onClose: () => void }) {
             />
           </label>
 
-          <div className="grid grid-cols-3 gap-3">
-            <label className="block text-sm">
-              Language
-              <select
-                className="mt-1 w-full border rounded p-2 bg-transparent"
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as Language)}
-              >
-                {LANGS.map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
+          <div className="space-y-3">
+            <fieldset>
+              <legend className="text-sm font-medium mb-1">Language</legend>
+              <div className="flex gap-3">
+                {LANGS.map((lang) => (
+                  <label key={lang} className="flex items-center gap-1 cursor-pointer text-sm">
+                    <input
+                      type="radio"
+                      name="language"
+                      value={lang}
+                      checked={language === lang}
+                      onChange={() => setLanguage(lang as Language)}
+                    />
+                    {lang}
+                  </label>
                 ))}
-              </select>
-            </label>
+              </div>
+            </fieldset>
 
-            <label className="block text-sm">
-              Difficulty
-              <select
-                className="mt-1 w-full border rounded p-2 bg-transparent"
-                value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value as 'easy' | 'medium' | 'hard')}
-              >
-                {DIFFS.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
+            <fieldset>
+              <legend className="text-sm font-medium mb-1">Difficulty</legend>
+              <div className="flex gap-3">
+                {DIFFS.map((diff) => (
+                  <label key={diff} className="flex items-center gap-1 cursor-pointer text-sm">
+                    <input
+                      type="radio"
+                      name="difficulty"
+                      value={diff}
+                      checked={difficulty === diff}
+                      onChange={() => setDifficulty(diff)}
+                    />
+                    {diff}
+                  </label>
                 ))}
-              </select>
-            </label>
+              </div>
+            </fieldset>
 
-            <label className="block text-sm">
-              Length
-              <select
-                className="mt-1 w-full border rounded p-2 bg-transparent"
-                value={length}
-                onChange={(e) => setLength(e.target.value as Length)}
-              >
-                {LENGTHS.map((v) => (
-                  <option key={v} value={v}>
-                    {v}
-                  </option>
+            <fieldset>
+              <legend className="text-sm font-medium mb-1">Length</legend>
+              <div className="flex gap-3">
+                {LENGTHS.map((len) => (
+                  <label key={len} className="flex items-center gap-1 cursor-pointer text-sm">
+                    <input
+                      type="radio"
+                      name="length"
+                      value={len}
+                      checked={length === len}
+                      onChange={() => setLength(len)}
+                    />
+                    {len}
+                  </label>
                 ))}
-              </select>
-            </label>
+              </div>
+            </fieldset>
           </div>
 
           <label className="flex items-center gap-2 text-sm cursor-pointer">

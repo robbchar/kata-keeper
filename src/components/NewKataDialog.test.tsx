@@ -77,8 +77,28 @@ const sampleCost = { inputTokens: 100, outputTokens: 200, totalUSD: 0.0012 }
 // Helpers
 // ---------------------------------------------------------------------------
 
-function renderDialog(onClose = vi.fn()) {
-  return { userActions: userEvent.setup(), onClose, ...render(<NewKataDialog onClose={onClose} />) }
+interface RenderDialogOptions {
+  onClose?: () => void
+  existingKataTitles?: string[]
+  isOpen?: boolean
+}
+
+function renderDialog({
+  onClose = vi.fn(),
+  existingKataTitles = [],
+  isOpen = true,
+}: RenderDialogOptions = {}) {
+  return {
+    userActions: userEvent.setup(),
+    onClose,
+    ...render(
+      <NewKataDialog
+        isOpen={isOpen}
+        onClose={onClose}
+        existingKataTitles={existingKataTitles}
+      />,
+    ),
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +113,21 @@ describe('NewKataDialog', () => {
     mockCreateSandbox.mockResolvedValue('sandbox-abc123')
     mockGenerateKata.mockResolvedValue(sampleCandidate)
     mockEstimateCost.mockReturnValue(sampleCost)
+  })
+
+  // -------------------------------------------------------------------------
+  // isOpen gate
+  // -------------------------------------------------------------------------
+  describe('isOpen prop', () => {
+    it('renders nothing when isOpen is false', () => {
+      renderDialog({ isOpen: false })
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    })
+
+    it('renders the dialog when isOpen is true', () => {
+      renderDialog({ isOpen: true })
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
   })
 
   // -------------------------------------------------------------------------
@@ -114,14 +149,16 @@ describe('NewKataDialog', () => {
     })
 
     it('calls onClose when Cancel is clicked', async () => {
-      const { userActions, onClose } = renderDialog()
+      const onClose = vi.fn()
+      const { userActions } = renderDialog({ onClose })
       await userActions.click(screen.getByRole('button', { name: /cancel/i }))
       expect(onClose).toHaveBeenCalledOnce()
     })
 
     it('calls onClose when the backdrop overlay is clicked', async () => {
-      const { userActions, onClose } = renderDialog()
-      const backdrop = document.querySelector('.fixed .absolute') as HTMLElement
+      const onClose = vi.fn()
+      const { userActions } = renderDialog({ onClose })
+      const backdrop = screen.getByTestId('dialog-backdrop')
       await userActions.click(backdrop)
       expect(onClose).toHaveBeenCalledOnce()
     })
@@ -219,7 +256,8 @@ describe('NewKataDialog', () => {
       const { getUserConfig } = await import('@/lib/userConfig')
       vi.mocked(getUserConfig).mockResolvedValue(defaultConfig)
 
-      const { userActions, onClose } = renderDialog()
+      const onClose = vi.fn()
+      const { userActions } = renderDialog({ onClose })
       await userActions.click(screen.getByRole('button', { name: /generate preview/i }))
       await screen.findByText(sampleCandidate.title)
       await userActions.click(screen.getByRole('button', { name: /accept & save/i }))
@@ -294,13 +332,27 @@ describe('NewKataDialog', () => {
       expect(mockCreateSandbox).not.toHaveBeenCalled()
     })
 
+    it('shows a CodeSandbox nudge message after saving without a CS token', async () => {
+      const { userActions } = renderDialog()
+      await userActions.click(screen.getByRole('button', { name: /generate preview/i }))
+      await screen.findByText(sampleCandidate.title)
+      await userActions.click(screen.getByRole('button', { name: /accept & save/i }))
+
+      await waitFor(() => expect(mockKataRepoUpsert).toHaveBeenCalled())
+      expect(
+        await screen.findByText(/connect codesandbox in config/i),
+      ).toBeInTheDocument()
+    })
+
     it('still navigates to /kata/:id after saving', async () => {
       const { userActions } = renderDialog()
       await userActions.click(screen.getByRole('button', { name: /generate preview/i }))
       await screen.findByText(sampleCandidate.title)
       await userActions.click(screen.getByRole('button', { name: /accept & save/i }))
 
-      await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/kata/test-kata-uuid'))
+      await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/kata/test-kata-uuid'), {
+        timeout: 3000,
+      })
     })
   })
 
@@ -325,20 +377,36 @@ describe('NewKataDialog', () => {
   // "Take existing katas into account" checkbox
   // -------------------------------------------------------------------------
   describe('"take existing katas into account" checkbox', () => {
-    it('fetches existing kata titles and passes them to generateKata when checked', async () => {
+    it('passes existingKataTitles prop to generateKata when checkbox is checked', async () => {
       const { getUserConfig } = await import('@/lib/userConfig')
       vi.mocked(getUserConfig).mockResolvedValue(defaultConfig)
-      mockKataRepoList.mockResolvedValue([
-        { id: '1', title: 'Binary Search', languages: ['typescript'], tags: [], createdAt: '' },
-      ])
 
-      const { userActions } = renderDialog()
+      const { userActions } = renderDialog({
+        existingKataTitles: ['Binary Search'],
+      })
       await userActions.click(screen.getByRole('checkbox'))
       await userActions.click(screen.getByRole('button', { name: /generate preview/i }))
 
       await waitFor(() => {
         expect(mockGenerateKata).toHaveBeenCalledWith(
           expect.objectContaining({ existingKataTitles: ['Binary Search'] }),
+        )
+      })
+    })
+
+    it('passes undefined existingKataTitles when checkbox is not checked', async () => {
+      const { getUserConfig } = await import('@/lib/userConfig')
+      vi.mocked(getUserConfig).mockResolvedValue(defaultConfig)
+
+      const { userActions } = renderDialog({
+        existingKataTitles: ['Binary Search'],
+      })
+      // Do NOT click the checkbox — leave it unchecked
+      await userActions.click(screen.getByRole('button', { name: /generate preview/i }))
+
+      await waitFor(() => {
+        expect(mockGenerateKata).toHaveBeenCalledWith(
+          expect.objectContaining({ existingKataTitles: undefined }),
         )
       })
     })
