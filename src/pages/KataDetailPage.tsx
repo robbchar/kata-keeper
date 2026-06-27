@@ -17,6 +17,7 @@ export default function KataDetailPage() {
   const [kata, setKata] = useState<Kata | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [sandboxUrlInput, setSandboxUrlInput] = useState('')
+  const [editingTitle, setEditingTitle] = useState<string | null>(null)
 
   const notesDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -44,8 +45,8 @@ export default function KataDetailPage() {
         // Silently ignore — this is a best-effort background refresh
       }
     })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kata?.sandboxId])
+  // intentionally omits kata.sandboxUpdatedAt — fire once per sandboxId, not on every metadata refresh
+  }, [kata?.sandboxId, user]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function patchKata(patch: Partial<Kata>) {
     if (!kata) return
@@ -107,8 +108,15 @@ export default function KataDetailPage() {
           <Link to="/" className="text-sm text-indigo-600 hover:underline shrink-0">← Back</Link>
           <input
             className="flex-1 min-w-0 bg-transparent text-lg font-semibold focus:outline-none"
-            value={kata.title}
-            onChange={(e) => patchKata({ title: e.target.value })}
+            value={editingTitle ?? kata.title}
+            onFocus={() => setEditingTitle(kata.title)}
+            onChange={(e) => setEditingTitle(e.target.value)}
+            onBlur={() => {
+              const trimmed = editingTitle?.trim()
+              if (trimmed && trimmed !== kata.title) patchKata({ title: trimmed })
+              setEditingTitle(null)
+            }}
+            onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur() }}
             aria-label="Kata title"
           />
           <button

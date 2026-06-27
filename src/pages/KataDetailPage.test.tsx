@@ -230,11 +230,13 @@ describe('KataDetailPage', () => {
   // Inline title editing
   // -------------------------------------------------------------------------
   describe('inline title editing', () => {
-    it('calls KataRepo.update when the title changes', async () => {
+    it('calls KataRepo.update with the new title after blur', async () => {
       renderPage()
       const titleInput = await screen.findByDisplayValue(baseKata.title)
 
+      fireEvent.focus(titleInput)
       fireEvent.change(titleInput, { target: { value: 'Updated Title' } })
+      fireEvent.blur(titleInput)
 
       await waitFor(() => {
         expect(mockKataRepoUpdate).toHaveBeenCalledWith(
@@ -242,6 +244,20 @@ describe('KataDetailPage', () => {
           expect.objectContaining({ title: 'Updated Title' }),
         )
       })
+    })
+
+    it('does not call KataRepo.update when the title is unchanged after blur', async () => {
+      renderPage()
+      const titleInput = await screen.findByDisplayValue(baseKata.title)
+
+      mockKataRepoUpdate.mockClear()
+      fireEvent.focus(titleInput)
+      fireEvent.blur(titleInput)
+
+      await act(async () => { await new Promise((r) => setTimeout(r, 50)) })
+
+      const titleCalls = mockKataRepoUpdate.mock.calls.filter(([, p]) => 'title' in p)
+      expect(titleCalls).toHaveLength(0)
     })
   })
 
