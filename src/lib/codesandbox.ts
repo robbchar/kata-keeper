@@ -41,7 +41,7 @@ export async function createSandbox(params: {
   csToken: string
 }): Promise<string> {
   const { candidate, csToken } = params
-  const ext = LANG_EXT[candidate.language ?? 'typescript'] ?? 'ts'
+  const ext = LANG_EXT[candidate.language ?? 'typescript']
   const readmeContent = `# ${candidate.title}\n\n${candidate.steps.map((step) => `- ${step}`).join('\n')}`
 
   const res = await fetch(`${CS_API}/sandboxes`, {
