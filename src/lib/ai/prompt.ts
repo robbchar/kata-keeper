@@ -24,9 +24,9 @@ export function buildSystemPrompt(): string {
 
 export function buildUserPrompt(params: GenerateKataParams): string {
   const { influence, language, difficulty, length, existingKataTitles } = params
-  const estMinutes = LENGTH_MINUTES[length] ?? 35
-  const langLabel = LANGUAGE_LABELS[language] ?? language
-  const diffLabel = DIFFICULTY_LABELS[difficulty] ?? difficulty
+  const estMinutes = LENGTH_MINUTES[length] ?? LENGTH_MINUTES['Standard']
+  const langLabel = LANGUAGE_LABELS[language] ?? LANGUAGE_LABELS['typescript']
+  const diffLabel = DIFFICULTY_LABELS[difficulty] ?? DIFFICULTY_LABELS['medium']
 
   return [
     influence ? `Influence/focus: ${influence}` : '',
@@ -42,5 +42,5 @@ export function buildUserPrompt(params: GenerateKataParams): string {
 }
 
 export function estimateMinutes(length: string): number {
-  return LENGTH_MINUTES[length] ?? 35
+  return LENGTH_MINUTES[length] ?? LENGTH_MINUTES['Standard']
 }
