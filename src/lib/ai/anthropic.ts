@@ -1,9 +1,9 @@
 import type { AiProvider, AiKataCandidate, GenerateKataParams, CostEstimate } from './types'
 import { buildSystemPrompt, buildUserPrompt } from './prompt'
 
-// claude-sonnet-4-6 pricing per token — verify at https://www.anthropic.com/api if stale
-const PRICE_PER_INPUT_TOKEN = 0.003 / 1_000
-const PRICE_PER_OUTPUT_TOKEN = 0.015 / 1_000
+// claude-sonnet-4-6 pricing — verify at https://claude.com/pricing#api if stale
+const PRICE_PER_INPUT_TOKEN = 3 / 1_000_000   // $3 per million tokens
+const PRICE_PER_OUTPUT_TOKEN = 15 / 1_000_000  // $15 per million tokens
 
 const JSON_INSTRUCTION = ' Return ONLY valid JSON — no markdown fencing.'
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages'

@@ -1,9 +1,9 @@
 import type { AiProvider, AiKataCandidate, GenerateKataParams, CostEstimate } from './types'
 import { buildSystemPrompt, buildUserPrompt } from './prompt'
 
-// gpt-4o-mini pricing per token — verify at https://openai.com/api/pricing if stale
-const PRICE_PER_INPUT_TOKEN = 0.00015 / 1_000
-const PRICE_PER_OUTPUT_TOKEN = 0.0006 / 1_000
+// gpt-4o-mini pricing — verify at https://openai.com/api/pricing if stale
+const PRICE_PER_INPUT_TOKEN = 0.15 / 1_000_000   // $0.15 per million tokens
+const PRICE_PER_OUTPUT_TOKEN = 0.60 / 1_000_000  // $0.60 per million tokens
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions'
 
