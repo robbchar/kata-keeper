@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import { nowISO, uuid, LANGUAGES, DIFFICULTIES, STATUSES } from '../db';
-import type { Kata, Language, Status, Difficulty } from '../types';
+import { nowISO, uuid, LANGUAGES, classNames } from '../db';
+import type { Kata, Language } from '../types';
 import { Label } from './Label';
 import { Input } from './Input';
-import { Select } from './Select';
 import { Textarea } from './Textarea';
 import { Button } from './Button';
 import { IconButton } from './IconButton';
-import { classNames } from '../db';
 
 export function KataForm({
   initial,
@@ -19,14 +17,9 @@ export function KataForm({
   onSave: (k: Kata) => void;
 }) {
   const [title, setTitle] = useState(initial?.title ?? '');
-  const [description, setDescription] = useState(initial?.description ?? '');
-  const [requirements, setRequirements] = useState(initial?.requirements ?? '');
   const [languagesSel, setLanguagesSel] = useState<Language[]>(initial?.languages ?? []);
   const [tagsText, setTagsText] = useState((initial?.tags ?? []).join(', '));
-  const [link, setLink] = useState(initial?.link ?? '');
   const [notes, setNotes] = useState(initial?.notes ?? '');
-  const [status, setStatus] = useState<Status>(initial?.status ?? 'backlog');
-  const [difficulty, setDifficulty] = useState<Difficulty | undefined>(initial?.difficulty);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -35,20 +28,15 @@ export function KataForm({
     const k: Kata = {
       id: (initial?.id as string) ?? uuid(),
       title: title.trim(),
-      description: description.trim() || undefined,
-      requirements: requirements.trim() || undefined,
       languages: languagesSel,
       tags: tagsText
         .split(',')
         .map((t) => t.trim().toLowerCase())
         .filter(Boolean),
-      link: link.trim() || undefined,
       notes: notes.trim() || undefined,
-      status,
-      difficulty,
+      sandboxId: initial?.sandboxId,
+      sandboxUpdatedAt: initial?.sandboxUpdatedAt,
       createdAt: (initial?.createdAt as string) ?? now,
-      updatedAt: now,
-      lastWorkedAt: initial?.lastWorkedAt,
     };
     onSave(k);
   }
@@ -97,63 +85,7 @@ export function KataForm({
           id="tags"
           value={tagsText}
           onChange={(e) => setTagsText(e.target.value)}
-          placeholder="a11y, async, debounce"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="difficulty">Difficulty</Label>
-          <Select
-            id="difficulty"
-            value={difficulty ?? ''}
-            onChange={(e) => setDifficulty((e.target.value || undefined) as Difficulty | undefined)}
-          >
-            <option value="">—</option>
-            {DIFFICULTIES.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="status">Status</Label>
-          <Select id="status" value={status} onChange={(e) => setStatus(e.target.value as Status)}>
-            {STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </Select>
-        </div>
-      </div>
-      <div>
-        <Label htmlFor="link">Link (CodeSandbox, GitHub, etc.)</Label>
-        <Input
-          id="link"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          placeholder="https://codesandbox.io/s/…"
-        />
-      </div>
-      <div>
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Short blurb"
-        />
-      </div>
-      <div>
-        <Label htmlFor="requirements">Requirements</Label>
-        <Textarea
-          id="requirements"
-          rows={4}
-          value={requirements}
-          onChange={(e) => setRequirements(e.target.value)}
-          placeholder="Longer spec or acceptance criteria"
+          placeholder="hooks, async, debounce"
         />
       </div>
       <div>
